@@ -1,6 +1,6 @@
 # SinatraPermittedParams
 
-A simple parameter filtering control for Sinatra
+A simple parameter filtering for Sinatra
 
 ## Installation
 
@@ -20,7 +20,17 @@ Or install it yourself as:
 
 ## Usage
 
-This gems allows you to define your permitted params
+This gems allows you to define your permitted params.
+
+Add it as a helper in your sinatra App:
+
+```ruby
+  class App < Sinatra::Base
+    helpers Sinatra::PermittedParams
+    #...
+```
+
+And define your permitted params:
 
 ```ruby
   require 'sinatra/base'
@@ -30,7 +40,7 @@ This gems allows you to define your permitted params
     helpers Sinatra::PermittedParams
 
     # GET /comment?title=comment&body=new%20params%20gems
-    # GET /comment?title=comment&body=new%20params%20gems&user=new_user  raises <Sinatra::PermittedParams::ForbiddenParamError: user>
+    # GET /comment?title=comment&body=new%20params%20gems&user=new_user  raises <Sinatra::PermittedParams::UnpermittedParamsError: Unpermitted params found: invalid>
     post '/comment' do
       permitted_params = permitted_params([:title, :body])
       comment = Comment.create(permitted_params)
@@ -40,10 +50,9 @@ This gems allows you to define your permitted params
   end
 ```
 
-If a parameter different than name or code is received then it raises a ForbiddenParamError.
+If a parameter different than the declared ones is received, then it raises a Sinatra::PermittedParams::UnpermittedParamsError.
 
-Adding keys to the option 'ignore' allows you to define the params you want to filter
-without raising the error.
+Adding keys to the option 'ignore' allows you to define the params you want to filter without raising the error:
 
 ```ruby
   post '/comment' do
@@ -59,8 +68,8 @@ the permitted_params will return a hash with title and body.
 
 You can intercept the error with a Sinatra ```error do...end``` block
 
-```
-error Sinatra::PermittedParams::ForbiddenParamError do
+```ruby
+error Sinatra::PermittedParams::UnpermittedParamsError do
   #...
 end
 ```
