@@ -10,12 +10,16 @@ describe Sinatra::PermittedParams do
   class DummyController < Sinatra::Base
     helpers Sinatra::PermittedParams
 
-    get '/test_permitted_params' do
+    post '/test_permitted_params' do
       Dummy.foo(testing_permitted_params)
     end
 
     get '/test_ignored_params' do
       Dummy.foo(testing_ignored_params)
+    end
+
+    put '/test_wildcard_params/:id' do
+      Dummy.foo(test_wildcard_params)
     end
 
     def testing_permitted_params
@@ -24,6 +28,10 @@ describe Sinatra::PermittedParams do
 
     def testing_ignored_params
       permitted_params([:name, :code], ignore: [:address])
+    end
+
+    def test_wildcard_params
+      permitted_params([:id, :name, :code])
     end
   end
 
@@ -34,14 +42,14 @@ describe Sinatra::PermittedParams do
 
       expect(Dummy).to receive(:foo).with(attributes)
 
-      get '/test_permitted_params', attributes
+      post '/test_permitted_params', attributes
     end
   end
 
   context 'when the request contains a not permitted param' do
     it 'raises an error' do
       expect do
-        get '/test_permitted_params', 'invalid' => 'param'
+        post '/test_permitted_params', 'invalid' => 'param'
       end.to raise_error(
         Sinatra::PermittedParams::UnpermittedParamsError,
         'Unpermitted params found: invalid'
@@ -57,6 +65,19 @@ describe Sinatra::PermittedParams do
       expect(Dummy).to receive(:foo).with(expected_attributes)
 
       get '/test_ignored_params', attributes
+    end
+  end
+
+  context 'when the request contains splat or wildcard parameters' do
+    context 'when wildcard parameters (splat & captures) are not defined as permitted' do
+      it 'does not raise an error' do
+        attributes = { 'name' => 'Joe', 'code' => 'ERF' }
+        expected_attributes = attributes.merge('id' => '5')
+
+        expect(Dummy).to receive(:foo).with(expected_attributes)
+
+        put '/test_wildcard_params/5', attributes
+      end
     end
   end
 end

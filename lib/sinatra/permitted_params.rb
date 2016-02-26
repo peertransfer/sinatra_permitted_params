@@ -4,6 +4,8 @@ module Sinatra
   module PermittedParams
     class UnpermittedParamsError < StandardError; end
 
+    WILDCARD_PARAMS = ['splat', 'captures']
+
     def permitted_params(permitted_keys, ignore: [])
       ignored_keys = stringify(ignore)
       permitted_keys = stringify(permitted_keys)
@@ -18,9 +20,9 @@ module Sinatra
     private
 
     def reject_ignored_params(ignored_keys)
-      return params if ignored_keys.empty?
+      keys_to_ignore = ignored_keys + WILDCARD_PARAMS
 
-      params.reject { |key, _| ignored_keys.include?(key) }
+      params.reject { |key, _| keys_to_ignore.include?(key) }
     end
 
     def check_params(filtered_params, permitted_keys)

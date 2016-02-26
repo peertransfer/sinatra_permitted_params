@@ -25,6 +25,9 @@ This gems allows you to define your permitted params.
 Add it as a helper in your sinatra App:
 
 ```ruby
+  require 'sinatra/base'
+  require 'sinatra/permitted_params'
+
   class App < Sinatra::Base
     helpers Sinatra::PermittedParams
     #...
@@ -39,8 +42,6 @@ And define your permitted params:
   class App < Sinatra::Base
     helpers Sinatra::PermittedParams
 
-    # GET /comment?title=comment&body=new%20params%20gems
-    # GET /comment?title=comment&body=new%20params%20gems&user=new_user  raises <Sinatra::PermittedParams::UnpermittedParamsError: Unpermitted params found: invalid>
     post '/comment' do
       permitted_params = permitted_params([:title, :body])
       comment = Comment.create(permitted_params)
@@ -48,6 +49,9 @@ And define your permitted params:
       #...
     end
   end
+
+  # GET /comment?title=comment&body=new%20params%20gems
+  # GET /comment?title=comment&body=new%20params%20gems&user=new_user  raises <Sinatra::PermittedParams::UnpermittedParamsError: Unpermitted params found: invalid>
 ```
 
 If a parameter different than the declared ones is received, then it raises a Sinatra::PermittedParams::UnpermittedParamsError.
